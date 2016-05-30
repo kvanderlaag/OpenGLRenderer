@@ -1,0 +1,79 @@
+# cube.obj
+#
+
+g cube
+
+#
+# vertices
+#
+
+# 1	front top left
+v -1.0   1.0  -1.0
+# 2	front top right
+v  1.0   1.0  -1.0
+# 3	front bottom right
+v  1.0  -1.0  -1.0
+# 4	front bottom left
+v -1.0  -1.0  -1.0
+# 5	rear top left
+v -1.0   1.0   1.0
+# 6	rear top right
+v  1.0   1.0   1.0
+# 7	rear bottom right
+v  1.0  -1.0   1.0
+# 8	rear bottom left
+v -1.0  -1.0   1.0
+
+#
+# vertex normals
+#
+
+# 1	back
+vn  0.0  0.0  1.0
+# 2	front
+vn  0.0  0.0 -1.0
+# 3	top
+vn  0.0  1.0  0.0
+# 4	bottom
+vn  0.0 -1.0  0.0
+# 5	left
+vn  1.0  0.0  0.0
+# 6	right
+vn -1.0  0.0  0.0
+
+#
+# texture coordinates
+#
+
+# 1	top left
+vt  0.0  0.0
+# 2	top right
+vt  1.0  0.0
+# 3	bottom right
+vt  1.0  1.0
+# 4	bottom left
+vt  0.0  1.0
+
+# front
+f  1/1/2  4/3/2  3/4/2
+f  1/1/2  3/2/2  2/3/2
+
+# back
+f  6/1/1  8/3/1  7/4/1
+f  6/1/1  5/2/1  8/3/1
+
+# left
+f  5/1/5  4/3/5  8/4/5
+f  5/1/5  1/2/5  4/3/5
+
+# right
+f  2/1/6  7/3/6  3/4/6
+f  2/1/6  6/2/6  7/3/6
+
+# top
+# f  1//4  5//4  6//4
+# f  1//4  6//4  2//4
+
+# bottom
+# f  2//1  6//1  8//1
+# f  2//1  8//1  4//1

@@ -19,7 +19,6 @@ uniform vec3 lightPosition;
 uniform vec3 cameraPosition;
 
 void main() {
-
 	vec4 modelPos = model * vec4(position, 1.0);
 	vNormal = model * vec4(normal, 1);
 
