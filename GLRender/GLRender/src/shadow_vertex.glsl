@@ -6,12 +6,12 @@ layout(location=2) in vec3 norm;
 
 layout(location=0) out vec3 worldPos;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 proj;
+uniform mat4 smodel;
+uniform mat4 sview;
+uniform mat4 sproj;
 
 void main() {
-	worldPos = (model * vec4(position, 1.0)).xyz;
+	worldPos = (smodel * vec4(position, 1.0)).xyz;
 
-	gl_Position = proj * view * model * vec4(position, 1.0);
+	gl_Position = sproj * sview * smodel * vec4(position, 1.0);
 }

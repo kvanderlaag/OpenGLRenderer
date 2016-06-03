@@ -272,14 +272,13 @@ int main(int argc, char** argv) {
 	glm::vec4 lightColor2(0, 0, 1, 1);
 	glm::float32 lightIntensity2 = 150.0f;
 
-	glm::mat4 matModel, matView, matProj, matShadowProj;
-	matModel = glm::translate(glm::mat4(), glm::vec3(0.0, 0.5, 0.0));
-	matModel = glm::scale(matModel, glm::vec3(2.0, 2.0, 2.0));
+	glm::mat4 matView, matProj, matShadowProj;
 	matView = glm::lookAt(glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z), glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z) + glm::vec3(cameraDirection.x, cameraDirection.y, cameraDirection.z), glm::vec3(cameraUp.x, cameraUp.y, cameraUp.z));
 	matProj = glm::perspective(glm::radians(65.f), aspect, 0.1f, 50.f);
-	matShadowProj = glm::perspective(glm::radians(90.f), 1.0f, 0.1f, 50.f);
+	matShadowProj = glm::perspective(glm::radians(90.f), 1.0f, 1.f, 100.f);
 
 	glUseProgram(shadowShaderProgram);
+	glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "sproj"), 1, GL_FALSE, glm::value_ptr(matShadowProj));
 	glUniform3f(glGetUniformLocation(shadowShaderProgram, "cameraPosition"), lightPos.x, lightPos.y, lightPos.z);
 	
 
@@ -292,7 +291,6 @@ int main(int argc, char** argv) {
 	GLint uniModel = glGetUniformLocation(shaderProgram, "model");
 	GLint uniView = glGetUniformLocation(shaderProgram, "view");
 	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
-	glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(matModel));
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(matView));
 	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(matProj));
 
@@ -307,7 +305,7 @@ int main(int argc, char** argv) {
 	GLuint depth;
 	glGenTextures(1, &depth);
 	glBindTexture(GL_TEXTURE_2D, depth);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, SCREEN_WIDTH, SCREEN_WIDTH, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -324,7 +322,7 @@ int main(int argc, char** argv) {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	for (GLuint i = 0; i < 6; i++) {
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F, SCREEN_WIDTH, SCREEN_WIDTH, 0, GL_RED, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F, 1024, 1024, 0, GL_RED, GL_FLOAT, NULL);
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -580,10 +578,8 @@ int main(int argc, char** argv) {
 		cameraPos.z = std::max(-9.9f, cameraPos.z);
 		cameraPos.z = std::min(9.9f, cameraPos.z);
 
-		matModel = glm::rotate(matModel, (float)time / 1000.f * glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
 		companion_cube.rotate(glm::vec3(0, time / 1000.f * 90.f, 0));
 		quake_crate.rotate(glm::vec3(0, time / 1000.f * -90.f, 0));
-		glm::mat4 matGround = glm::mat4();
 		matView = glm::lookAt(glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z), glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z) + glm::vec3(cameraDirection.x, cameraDirection.y, cameraDirection.z), glm::vec3(cameraUp.x, cameraUp.y, cameraUp.z));
 
 		ticksSinceRender += time;
@@ -592,8 +588,6 @@ int main(int argc, char** argv) {
 			/* Shadow pass */
 			glUseProgram(shadowShaderProgram);
 			glCullFace(GL_FRONT);
-
-			glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "proj"), 1, GL_FALSE, glm::value_ptr(matShadowProj));
 
 			glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
 
@@ -608,9 +602,9 @@ int main(int argc, char** argv) {
 
 				glm::mat4 shadowCamera = glm::lookAt(lightPos, lightPos + gCameraDirections[i].Target, gCameraDirections[i].Up);
 
-				glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(shadowCamera));
+				glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "sview"), 1, GL_FALSE, glm::value_ptr(shadowCamera));
 
-				//room.DrawShadows();
+				room.DrawShadows();
 				companion_cube.DrawShadows();
 				quake_crate.DrawShadows();
 
@@ -628,6 +622,9 @@ int main(int argc, char** argv) {
 			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, shadowMap);
 			glUniform1i(glGetUniformLocation(shaderProgram, "shadowMap"), 2);
+
+			glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(matView));
+			glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(matProj));
 			
 			glUniform3fv(glGetUniformLocation(shaderProgram, "lightPosition"), 1, glm::value_ptr(lightPos));
 			glUniform4fv(glGetUniformLocation(shaderProgram, "lightColor"), 1, glm::value_ptr(lightColor));

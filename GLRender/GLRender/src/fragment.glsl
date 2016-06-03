@@ -9,6 +9,7 @@ layout(location=3) in vec3 lightDirection;
 layout(location=4) in vec3 eyeDir;
 layout(location=5) in vec3 reflectDir;
 layout(location=6) in vec3 worldPos;
+layout(location=7) in vec3 lightWorldDir;
 
 out vec4 outColor;
 
@@ -29,13 +30,13 @@ uniform float ns;
 uniform float d;
 uniform int numLights;
 
-float CalcShadowFactor(vec3 LightDirection, float lightDistance)
+float CalcShadowFactor(vec3 LightDirection, float lightDistance1)
 {
     float SampledDistance = texture(shadowMap, LightDirection).r;
 
-    float Distance = lightDistance;
+    float Distance = lightDistance1;
 
-    if (Distance < SampledDistance + 0.0001f)
+    if (Distance < SampledDistance - 0.005f)
         return 1.0; // Inside the light
     else
         return 0.5; // Inside the shadow
@@ -43,15 +44,6 @@ float CalcShadowFactor(vec3 LightDirection, float lightDistance)
 
 void main()
 {
-	int lights = 0;
-	if (numLights < 0) {
-		lights = 0;
-	}
-	else if (numLights > 4) {
-		lights = 4;
-	} else {
-		lights = numLights;
-	}
 
 	float SpecularIntensity = 1.0f;
 	float Shininess = ns;
@@ -70,15 +62,15 @@ void main()
 	vec4 diffuse = lightRatio * textureColor * MaterialDiffuseColor * lightColor * lightIntensity / (lightDistance * lightDistance);
 	vec4 specular = SpecularIntensity * MaterialSpecularColor * lightColor * lightIntensity * pow(cosAlpha,Shininess) / (lightDistance * lightDistance);
 	
-	vec3 lightWorldDir = worldPos - lightPosition;
-	float shadowFactor = CalcShadowFactor(lightWorldDir, lightDistance);
+	float shadowFactor = CalcShadowFactor(worldPos - lightPosition, distance(worldPos, lightPosition));
 
     if (blend == 0) {
-		outColor = clamp(ambient + (diffuse + specular) * shadowFactor, 0.0, 1.0);
+		outColor = clamp(ambient + shadowFactor*(diffuse + specular), 0.0, 1.0);
 	} else if (blend == 1) {
 		outColor = vec4( 0.5 * vNormal.xyz + vec3(0.5, 0.5, 0.5), 1);
 	} else {
-		float val = CalcShadowFactor(worldPos - lightPosition, lightDistance);
+		float infinity = 1.0 / 0.0;
+		float val = texture(shadowMap, lightWorldDir).r / 50;
 		outColor = vec4(val, val, val, 1);
 	}
 	

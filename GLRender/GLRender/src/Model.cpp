@@ -175,7 +175,7 @@ void Model::Draw() {
 void Model::DrawShadows() {
 
 	glUseProgram(mShadowShaderProgram);
-	glUniformMatrix4fv(glGetUniformLocation(mShadowShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(matTransform));
+	glUniformMatrix4fv(glGetUniformLocation(mShadowShaderProgram, "smodel"), 1, GL_FALSE, glm::value_ptr(matTransform));
 
 
 	for (int i = 0; i < mShapes.size(); ++i) {

@@ -13,6 +13,7 @@ layout(location=3) out vec3 lightDirection;
 layout(location=4) out vec3 eyeDir;
 layout(location=5) out vec3 reflectDir;
 layout(location=6) out vec3 worldPos;
+layout(location=7) out vec3 lightWorldDir;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -29,6 +30,8 @@ void main() {
 	eyeDir = normalize(cameraPosition - modelPos.xyz);
 
 	worldPos = modelPos.xyz;
+
+	lightWorldDir = worldPos - vec4(lightPosition, 1).xyz;
 
 	lightDistance = distance(modelPos.xyz, lightPosition);
 	lightDirection = normalize(modelPos.xyz - lightPosition);
