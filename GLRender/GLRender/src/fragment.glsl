@@ -71,7 +71,7 @@ void main()
 	vec4 specular = SpecularIntensity * MaterialSpecularColor * lightColor * lightIntensity * pow(cosAlpha,Shininess) / (lightDistance * lightDistance);
 	
 	vec3 lightWorldDir = worldPos - lightPosition;
-	float shadowFactor = CalcShadowFactor(lightWorldDir, lightDistance);
+	float shadowFactor = CalcShadowFactor(lightWorldDir, distance(worldPos, lightPosition));
 
     if (blend == 0) {
 		outColor = clamp(ambient + (diffuse + specular) * shadowFactor, 0.0, 1.0);
