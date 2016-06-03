@@ -13,5 +13,5 @@ uniform mat4 proj;
 void main() {
 	worldPos = (model * vec4(position, 1.0)).xyz;
 
-	gl_Position = proj * view * vec4(worldPos, 1.0);
+	gl_Position = proj * view * model * vec4(position, 1.0);
 }

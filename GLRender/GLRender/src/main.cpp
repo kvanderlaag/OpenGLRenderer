@@ -1,7 +1,7 @@
 #define GLEW_STATIC
 
 #include <Windows.h>
-//#include <ShellScalingApi.h>
+#include <ShellScalingApi.h>
 #include <GL/glew.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
@@ -20,7 +20,7 @@
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "advapi32.lib")
-//#pragma comment(lib, "Shcore.lib")
+#pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "lib/SDL2.lib")
 #pragma comment(lib, "lib/SDL2main.lib")
 #pragma comment(lib, "lib/SOIL.lib")
@@ -94,7 +94,7 @@ void GLAPIENTRY DebugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum se
 */
 int main(int argc, char** argv) {
 
-	//SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+	SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
 
 	SDL_Init(SDL_INIT_VIDEO);
 
@@ -307,7 +307,7 @@ int main(int argc, char** argv) {
 	GLuint depth;
 	glGenTextures(1, &depth);
 	glBindTexture(GL_TEXTURE_2D, depth);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, SCREEN_WIDTH, SCREEN_WIDTH, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
