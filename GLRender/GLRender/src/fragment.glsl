@@ -62,7 +62,12 @@ void main()
 	vec4 diffuse = lightRatio * textureColor * MaterialDiffuseColor * lightColor * lightIntensity / (lightDistance * lightDistance);
 	vec4 specular = SpecularIntensity * MaterialSpecularColor * lightColor * lightIntensity * pow(cosAlpha,Shininess) / (lightDistance * lightDistance);
 	
+<<<<<<< HEAD
 	float shadowFactor = CalcShadowFactor(worldPos - lightPosition, distance(worldPos, lightPosition));
+=======
+	vec3 lightWorldDir = worldPos - lightPosition;
+	float shadowFactor = CalcShadowFactor(lightWorldDir, distance(worldPos, lightPosition));
+>>>>>>> origin/master
 
     if (blend == 0) {
 		outColor = clamp(ambient + shadowFactor*(diffuse + specular), 0.0, 1.0);
