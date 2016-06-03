@@ -26,6 +26,8 @@
     <None Include="packages.config" />
     <None Include="src\vertex.glsl" />
     <None Include="src\fragment.glsl" />
+    <None Include="src\shadow_vertex.glsl" />
+    <None Include="src\shadow_fragment.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Model.h">
