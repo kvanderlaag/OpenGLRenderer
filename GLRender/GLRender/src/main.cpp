@@ -1,7 +1,7 @@
 #define GLEW_STATIC
 
 #include <Windows.h>
-#include <ShellScalingApi.h>
+//#include <ShellScalingApi.h>
 #include <GL/glew.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
@@ -20,7 +20,7 @@
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "advapi32.lib")
-#pragma comment(lib, "Shcore.lib")
+//#pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "lib/SDL2.lib")
 #pragma comment(lib, "lib/SDL2main.lib")
 #pragma comment(lib, "lib/SOIL.lib")
@@ -34,8 +34,8 @@
 
 #include <cstdlib>
 
-const int SCREEN_WIDTH = 1024;
-const int SCREEN_HEIGHT = 768;
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
 
 const float aspect = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
 
@@ -94,7 +94,7 @@ void GLAPIENTRY DebugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum se
 */
 int main(int argc, char** argv) {
 
-	SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+	//SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
 
 	SDL_Init(SDL_INIT_VIDEO);
 
@@ -587,6 +587,7 @@ int main(int argc, char** argv) {
 		if (ticksSinceRender >= renderInterval) {
 			/* Shadow pass */
 			glUseProgram(shadowShaderProgram);
+			glViewport(0, 0, 1024, 1024);
 			glCullFace(GL_FRONT);
 
 			glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
@@ -615,6 +616,7 @@ int main(int argc, char** argv) {
 
 			/* Color pass */
 			glUseProgram(shaderProgram);
+			glViewport(0, 0, 1024, 768);
 			glCullFace(GL_BACK);
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
