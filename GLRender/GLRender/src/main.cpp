@@ -1,7 +1,8 @@
 #define GLEW_STATIC
 
+
 #include <Windows.h>
-//#include <ShellScalingApi.h>
+#include <ShellScalingApi.h>
 #include <GL/glew.h>
 #include <gl/GL.h>
 #include <gl/GLU.h>
@@ -20,7 +21,7 @@
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "advapi32.lib")
-//#pragma comment(lib, "Shcore.lib")
+#pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "lib/SDL2.lib")
 #pragma comment(lib, "lib/SDL2main.lib")
 #pragma comment(lib, "lib/SOIL.lib")
@@ -34,8 +35,8 @@
 
 #include <cstdlib>
 
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 1024;
+const int SCREEN_HEIGHT = 768;
 
 const float aspect = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
 
@@ -94,15 +95,20 @@ void GLAPIENTRY DebugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum se
 */
 int main(int argc, char** argv) {
 
-	//SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
+	SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE);
 
 	SDL_Init(SDL_INIT_VIDEO);
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#ifdef _ES_2
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#else
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+#endif
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
 #ifdef _DEBUG
@@ -123,7 +129,11 @@ int main(int argc, char** argv) {
 
 	glEnable(GL_DEPTH_TEST);
 
+#ifdef _ES_2
+	GLchar* vertexShader = LoadShader("src/vertex_es2.glsl");
+#else
 	GLchar* vertexShader = LoadShader("src/vertex.glsl");
+#endif
 
 	if (vertexShader == NULL) {
 		SDL_GL_DeleteContext(context);
@@ -131,7 +141,11 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+#ifdef _ES_2
+	GLchar* fragmentShader = LoadShader("src/fragment_es2.glsl");
+#else
 	GLchar* fragmentShader = LoadShader("src/fragment.glsl");
+#endif
 
 	if (fragmentShader == NULL) {
 		SDL_GL_DeleteContext(context);
@@ -139,7 +153,11 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+#ifdef _ES_2
+	GLchar* shadowVertexShader = LoadShader("src/shadow_vertex_es2.glsl");
+#else
 	GLchar* shadowVertexShader = LoadShader("src/shadow_vertex.glsl");
+#endif
 
 	if (shadowVertexShader == NULL) {
 		SDL_GL_DeleteContext(context);
@@ -147,7 +165,11 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+#ifdef _ES_2
+	GLchar* shadowFragmentShader = LoadShader("src/shadow_fragment_es2.glsl");
+#else
 	GLchar* shadowFragmentShader = LoadShader("src/shadow_fragment.glsl");
+#endif
 
 	if (shadowFragmentShader == NULL) {
 		SDL_GL_DeleteContext(context);
@@ -250,13 +272,22 @@ int main(int argc, char** argv) {
 	
 	glAttachShader(shaderProgram, glVertexShader);
 	glAttachShader(shaderProgram, glFragmentShader);
+#ifdef _ES_2
+	glBindAttribLocation(shaderProgram, 0, "position");
+	glBindAttribLocation(shaderProgram, 1, "inTexCoords");
+	glBindAttribLocation(shaderProgram, 2, "normal");
+#endif
 	glLinkProgram(shaderProgram);
-	
 
 	GLuint shadowShaderProgram = glCreateProgram();
 
 	glAttachShader(shadowShaderProgram, glShadowVertexShader);
 	glAttachShader(shadowShaderProgram, glShadowFragmentShader);
+#ifdef _ES_2
+	glBindAttribLocation(shadowShaderProgram, 0, "position");
+	glBindAttribLocation(shadowShaderProgram, 1, "inTex");
+	glBindAttribLocation(shadowShaderProgram, 2, "norm");
+#endif
 	glLinkProgram(shadowShaderProgram);
 
 
@@ -264,9 +295,9 @@ int main(int argc, char** argv) {
 	glm::vec4 cameraDirection(0, 0, -1, 1);
 	glm::vec4 cameraUp(0, 1, 0, 1);
 
-	glm::vec3 lightPos(-5, 5, 5);
+	glm::vec3 lightPos(2, 5, 0);
 	glm::vec4 lightColor(1, 1, 1, 1);
-	glm::float32 lightIntensity = 350.0f;
+	glm::float32 lightIntensity = 50.0f;
 
 	glm::vec3 lightPos2(2, 2, -3);
 	glm::vec4 lightColor2(0, 0, 1, 1);
@@ -274,8 +305,8 @@ int main(int argc, char** argv) {
 
 	glm::mat4 matView, matProj, matShadowProj;
 	matView = glm::lookAt(glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z), glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z) + glm::vec3(cameraDirection.x, cameraDirection.y, cameraDirection.z), glm::vec3(cameraUp.x, cameraUp.y, cameraUp.z));
-	matProj = glm::perspective(glm::radians(65.f), aspect, 0.1f, 50.f);
-	matShadowProj = glm::perspective(glm::radians(90.f), 1.0f, 1.f, 100.f);
+	matProj = glm::perspective(glm::radians(65.f), aspect, 0.1f, 200.f);
+	matShadowProj = glm::perspective(glm::radians(90.f), 1.0f, 1.f, 200.f);
 
 	glUseProgram(shadowShaderProgram);
 	glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "sproj"), 1, GL_FALSE, glm::value_ptr(matShadowProj));
@@ -374,14 +405,22 @@ int main(int argc, char** argv) {
 
 	/* Let's generate some models. */
 
-	Model companion_cube("crate2.obj", uniModel, shaderProgram, shadowShaderProgram, shadowMap);
-	companion_cube.translate(glm::vec3(3, 0.5, 2));
+	//Model companion_cube("crate2.obj", uniModel, shaderProgram, shadowShaderProgram, shadowMap, false);
+	//companion_cube.translate(glm::vec3(3, 0.5, 2));
 	
-	Model quake_crate("crate.obj", uniModel, shaderProgram, shadowShaderProgram, shadowMap);
-	quake_crate.translate(glm::vec3(-3, 0.5, -2));
+	//Model quake_crate("crate.obj", uniModel, shaderProgram, shadowShaderProgram, shadowMap, false);
+	//quake_crate.translate(glm::vec3(-3, 0.5, -2));
 
-	Model room("room.obj", uniModel, shaderProgram, shadowShaderProgram, shadowMap);
-	room.translate(glm::vec3(0, 4.5, 0));
+	//Model room("room.obj", uniModel, shaderProgram, shadowShaderProgram, shadowMap, false);
+	//room.translate(glm::vec3(0, 4.5, 0));
+
+	//Model pitcher("pitcher.obj", uniModel, shaderProgram, shadowShaderProgram, shadowMap, true);
+	//pitcher.scale(glm::vec3(0.1, 0.1, 0.1));
+	//pitcher.translate(glm::vec3(0, -0.5, 0));
+
+	Model sponza("sponza.obj", uniModel, shaderProgram, shadowShaderProgram, shadowMap, true);
+	sponza.scale(glm::vec3(0.01, 0.01, 0.01));
+
 
 
 	/* Main program loop */
@@ -569,22 +608,25 @@ int main(int argc, char** argv) {
 			cameraPos.z += run * right.z * moveSpeed * (time / 1000.f);
 		}
 
-		cameraPos.x = std::max(-9.9f, cameraPos.x);
-		cameraPos.x = std::min(9.9f, cameraPos.x);
+		cameraPos.x = std::max(-14.9f, cameraPos.x);
+		cameraPos.x = std::min(14.9f, cameraPos.x);
 
-		cameraPos.y = std::max(-0.49f, cameraPos.y);
-		cameraPos.y = std::min(9.49f, cameraPos.y);
+		cameraPos.y = std::max(0.f, cameraPos.y);
+		cameraPos.y = std::min(14.49f, cameraPos.y);
 
-		cameraPos.z = std::max(-9.9f, cameraPos.z);
-		cameraPos.z = std::min(9.9f, cameraPos.z);
+		cameraPos.z = std::max(-14.9f, cameraPos.z);
+		cameraPos.z = std::min(14.9f, cameraPos.z);
 
-		companion_cube.rotate(glm::vec3(0, time / 1000.f * 90.f, 0));
-		quake_crate.rotate(glm::vec3(0, time / 1000.f * -90.f, 0));
+		//companion_cube.rotate(glm::vec3(0, time / 1000.f * 90.f, 0));
+		//quake_crate.rotate(glm::vec3(0, time / 1000.f * -90.f, 0));
 		matView = glm::lookAt(glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z), glm::vec3(cameraPos.x, cameraPos.y, cameraPos.z) + glm::vec3(cameraDirection.x, cameraDirection.y, cameraDirection.z), glm::vec3(cameraUp.x, cameraUp.y, cameraUp.z));
 
 		ticksSinceRender += time;
 		/* If it's been more than 16ms since we rendered, render the scene */
 		if (ticksSinceRender >= renderInterval) {
+
+			glm::mat4 matViewProj = matProj * matView;
+
 			/* Shadow pass */
 			glUseProgram(shadowShaderProgram);
 			glViewport(0, 0, 1024, 1024);
@@ -603,11 +645,15 @@ int main(int argc, char** argv) {
 
 				glm::mat4 shadowCamera = glm::lookAt(lightPos, lightPos + gCameraDirections[i].Target, gCameraDirections[i].Up);
 
-				glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "sview"), 1, GL_FALSE, glm::value_ptr(shadowCamera));
+				glm::mat4 matShadowViewProj = matShadowProj * shadowCamera;
 
-				room.DrawShadows();
-				companion_cube.DrawShadows();
-				quake_crate.DrawShadows();
+				//glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "sview"), 1, GL_FALSE, glm::value_ptr(shadowCamera));
+
+				//room.DrawShadows();
+				//companion_cube.DrawShadows();
+				//quake_crate.DrawShadows();
+				//pitcher.DrawShadows();
+				sponza.DrawShadows(matShadowViewProj);
 
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
@@ -633,12 +679,14 @@ int main(int argc, char** argv) {
 			glUniform1fv(glGetUniformLocation(shaderProgram, "lightIntensity"), 1, &lightIntensity);
 
 			glUniform3f(uniCameraPos, cameraPos.x, cameraPos.y, cameraPos.z);
-			glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(matView));
-			glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(matProj));
+			//glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(matView));
+			//glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(matProj));
 			
-			room.Draw();
-			companion_cube.Draw();
-			quake_crate.Draw();
+			//room.Draw();
+			//companion_cube.Draw();
+			//quake_crate.Draw();
+			//pitcher.Draw();
+			sponza.Draw(matViewProj);
 
 			ticksSinceRender = 0;
 			SDL_GL_SwapWindow(window);

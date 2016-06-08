@@ -1,8 +1,9 @@
 #include "Model.h"
+#include <algorithm>
 
 
 
-Model::Model(const std::string& filename, GLint modelTransform, GLint shaderProgram, GLint shadowShaderProgram, GLuint shadowMap)
+Model::Model(const std::string& filename, GLint modelTransform, GLint shaderProgram, GLint shadowShaderProgram, GLuint shadowMap, bool flipNormals)
 {
 	mModelTransform = modelTransform;
 	mShaderProgram = shaderProgram;
@@ -17,7 +18,7 @@ Model::Model(const std::string& filename, GLint modelTransform, GLint shaderProg
 
 	calculateTransform();
 
-	bool ret = tinyobj::LoadObj(mShapes, mMaterials, error, filename.c_str());
+	bool ret = tinyobj::LoadObj(mShapes, mMaterials, error, filename.c_str(), nullptr, 3u);
 
 	if (!error.empty()) {
 		std::cerr << error << std::endl;
@@ -32,7 +33,7 @@ Model::Model(const std::string& filename, GLint modelTransform, GLint shaderProg
 	mVbo = (GLuint*) malloc(sizeof(GLuint) * mShapes.size());
 	mEbo = (GLuint*) malloc(sizeof(GLuint) * mShapes.size());
 	mMaterialIDs = (GLuint**)malloc(sizeof(GLuint*) * mShapes.size());
-	mMaterialStructs = (struct material*) malloc(sizeof(struct material) * mMaterials.size());
+	mMaterialStructs = (struct material*) malloc(sizeof(struct material) * std::max((int) mMaterials.size(), 1));
 
 	int textures = 0;
 	for (int i = 0; i < mMaterials.size(); ++i) {
@@ -41,6 +42,28 @@ Model::Model(const std::string& filename, GLint modelTransform, GLint shaderProg
 	}
 
 	mTextures = (GLuint*)malloc(sizeof(GLuint) * textures);
+
+	char* outputstring = (char*)malloc(sizeof(char) * 100);
+	sprintf(outputstring, "Materials: %i\n", mMaterials.size());
+	OutputDebugString(outputstring);
+
+	if (mMaterials.size() == 0) {
+		struct material m;
+		m.ka = glm::vec3(0.1f, 0.1f, 0.1f);
+		m.kd = glm::vec3(0.5f, 0.0f, 0.0f);
+		m.ks = glm::vec3(1.0f, 1.0f, 1.0f);
+		m.d = 1.0f;
+		m.ns = 200.f;
+		mMaterialStructs[0] = m;
+	}
+
+	for (int i = 0; i < mShapes.size(); ++i) {
+		for (int j = 0; j < mShapes.at(i).mesh.indices.size(); j += 3) {
+			int temp = mShapes.at(i).mesh.indices.at(j + 2);
+			mShapes.at(i).mesh.indices.at(j + 2) = mShapes.at(i).mesh.indices.at(j);
+			mShapes.at(i).mesh.indices.at(j) = temp;
+		}
+	}
 
 	for (int i = 0; i < mMaterials.size(); ++i) {
 		struct material m;
@@ -91,9 +114,21 @@ Model::Model(const std::string& filename, GLint modelTransform, GLint shaderProg
 			tempVertices[j/3].position.x = mShapes.at(i).mesh.positions.at(j);
 			tempVertices[j/3].position.y = mShapes.at(i).mesh.positions.at(j + 1);
 			tempVertices[j/3].position.z = mShapes.at(i).mesh.positions.at(j + 2);
-			tempVertices[j/3].normal.x = mShapes.at(i).mesh.normals.at(j);
-			tempVertices[j/3].normal.y = mShapes.at(i).mesh.normals.at(j + 1);
-			tempVertices[j/3].normal.z = mShapes.at(i).mesh.normals.at(j + 2);
+			if (mShapes.at(i).mesh.normals.size() > j) {
+				if (flipNormals) {
+					tempVertices[j / 3].normal.x = -mShapes.at(i).mesh.normals.at(j);
+					tempVertices[j / 3].normal.y = -mShapes.at(i).mesh.normals.at(j + 1);
+					tempVertices[j / 3].normal.z = -mShapes.at(i).mesh.normals.at(j + 2);
+				}
+				else {
+					tempVertices[j / 3].normal.x = mShapes.at(i).mesh.normals.at(j);
+					tempVertices[j / 3].normal.y = mShapes.at(i).mesh.normals.at(j + 1);
+					tempVertices[j / 3].normal.z = mShapes.at(i).mesh.normals.at(j + 2);
+				}
+			}
+			else {
+				tempVertices[j / 3].normal = glm::vec3(0, 1, 0);
+			}
 			
 		}
 		for (int j = 0; j < mShapes.at(i).mesh.texcoords.size(); j += 2) {
@@ -130,6 +165,7 @@ Model::Model(const std::string& filename, GLint modelTransform, GLint shaderProg
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
 		glBindVertexArray(0);
+
 	}
 	
 }
@@ -149,11 +185,15 @@ Model::~Model()
 	free(mMaterialStructs);
 }
 
-void Model::Draw() {
+void Model::Draw(glm::mat4& viewProj) {
 	
 	glUseProgram(mShaderProgram);
 	glUniformMatrix4fv(mModelTransform, 1, GL_FALSE, glm::value_ptr(matTransform));
+
+	glm::mat4 matWVP = viewProj * matTransform;
+
 	glUniformMatrix4fv(glGetUniformLocation(mShaderProgram, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(mNormalMat));
+	glUniformMatrix4fv(glGetUniformLocation(mShaderProgram, "worldViewProj"), 1, GL_FALSE, glm::value_ptr(matWVP));
 
 
 	for (int i = 0; i < mShapes.size(); ++i) {
@@ -165,17 +205,23 @@ void Model::Draw() {
 
 		glBindVertexArray(mVao[i]);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, mTextures[mMaterialIDs[i][0]]);
+		if (mMaterials.size() > 0) {
+			glBindTexture(GL_TEXTURE_2D, mTextures[mMaterialIDs[i][0]]);
+		}
 		glDrawElements(GL_TRIANGLES, mShapes.at(i).mesh.indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 
 }
 
-void Model::DrawShadows() {
+void Model::DrawShadows(glm::mat4& viewProj) {
 
 	glUseProgram(mShadowShaderProgram);
 	glUniformMatrix4fv(glGetUniformLocation(mShadowShaderProgram, "smodel"), 1, GL_FALSE, glm::value_ptr(matTransform));
+
+	glm::mat4 matWVP = viewProj * matTransform;
+
+	glUniformMatrix4fv(glGetUniformLocation(mShadowShaderProgram, "swvp"), 1, GL_FALSE, glm::value_ptr(matWVP));
 
 
 	for (int i = 0; i < mShapes.size(); ++i) {

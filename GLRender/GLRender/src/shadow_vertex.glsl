@@ -9,9 +9,10 @@ layout(location=0) out vec3 worldPos;
 uniform mat4 smodel;
 uniform mat4 sview;
 uniform mat4 sproj;
+uniform mat4 swvp;
 
 void main() {
 	worldPos = (smodel * vec4(position, 1.0)).xyz;
 
-	gl_Position = sproj * sview * smodel * vec4(position, 1.0);
+	gl_Position = swvp * vec4(position, 1.0);
 }

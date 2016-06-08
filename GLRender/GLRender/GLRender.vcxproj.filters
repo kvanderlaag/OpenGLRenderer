@@ -28,6 +28,10 @@
     <None Include="src\fragment.glsl" />
     <None Include="src\shadow_vertex.glsl" />
     <None Include="src\shadow_fragment.glsl" />
+    <None Include="src\fragment_es2.glsl" />
+    <None Include="src\shadow_fragment_es2.glsl" />
+    <None Include="src\shadow_vertex_es2.glsl" />
+    <None Include="src\vertex_es2.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Model.h">

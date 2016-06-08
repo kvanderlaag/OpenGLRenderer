@@ -18,6 +18,7 @@ layout(location=7) out vec3 lightWorldDir;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
+uniform mat4 worldViewProj;
 uniform mat4 normalMatrix;
 
 uniform vec3 lightPosition;
@@ -40,7 +41,7 @@ void main() {
 	reflectDir = normalize(reflect(lightDirection,vNormal));   
 	
 
-	gl_Position = proj * view * model * vec4(position, 1.0);
+	gl_Position = worldViewProj * vec4(position, 1.0);
 	
 	texcoords = inTexCoords;
 	

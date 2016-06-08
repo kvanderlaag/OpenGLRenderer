@@ -32,10 +32,10 @@ struct material {
 class Model
 {
 public:
-	Model(const std::string& filename, GLint modelTransform, GLint shaderProgram, GLint shadowShaderProgram, GLuint shadowMap);
+	Model(const std::string& filename, GLint modelTransform, GLint shaderProgram, GLint shadowShaderProgram, GLuint shadowMap, bool flipNormals);
 	~Model();
-	void Draw();
-	void DrawShadows();
+	void Draw(glm::mat4& viewProj);
+	void DrawShadows(glm::mat4& viewProj);
 
 	void rotate(glm::vec3 degrees);
 	void translate(glm::vec3 movement);

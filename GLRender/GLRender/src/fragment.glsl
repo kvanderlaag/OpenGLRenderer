@@ -32,14 +32,10 @@ uniform int numLights;
 
 float CalcShadowFactor(vec3 LightDirection, float lightDistance1)
 {
-    float SampledDistance = texture(shadowMap, LightDirection).r;
-
-    float Distance = lightDistance1;
-
-    if (Distance < SampledDistance + 0.005f)
+    if (lightDistance1 < texture(shadowMap, LightDirection).r + 0.005f)
         return 1.0; // Inside the light
     else
-        return 0.5; // Inside the shadow
+        return 0.2; // Inside the shadow
 } 
 
 void main()
@@ -54,6 +50,9 @@ void main()
 
 	
 	vec4 textureColor = texture(mtexture, texcoords);
+
+	if (textureColor.a < 1)
+		discard;
 
 	vec4 ambient = MaterialAmbientColor * textureColor;
 
@@ -70,7 +69,6 @@ void main()
 	} else if (blend == 1) {
 		outColor = vec4( 0.5 * vNormal.xyz + vec3(0.5, 0.5, 0.5), 1);
 	} else {
-		float infinity = 1.0 / 0.0;
 		float val = texture(shadowMap, lightWorldDir).r / 50;
 		outColor = vec4(val, val, val, 1);
 	}
