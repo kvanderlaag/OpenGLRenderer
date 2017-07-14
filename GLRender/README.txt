@@ -1,18 +1,12 @@
 README.txt
-CSC 305, A01, Summer 2016
-Assignment 2: Real-Time Rendering
 Author: Keegan van der Laag (jkvander@uvic.ca)
 
 Description: Rendering engine which uses OpenGL 4.3 to draw arbitrary models, with textures and normals, using Phong shading from a single point light source.
-
-Implements the basic requirements:
 
 - Renders a cube
 - Implements basic camera controls using the mouse and keyboard
 - Transforms the cube from model space to clip space using a ModelViewProjection matrix (actually the multiplication of Model, View, and Projection matrices)
 - Shades the cube using a single point light source using Phong shading
-
-Implements the following advanced requirements:
 - Renders a floor (and room) around the cube
 - Renders a second cube with a different material
 - Both cubes rotate in opposite directions around the Y-axis
