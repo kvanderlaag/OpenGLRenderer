@@ -5,7 +5,7 @@ I feel like I really need to preface this by saying that yes, it runs and does s
 
 Notable features:
 - Perspective camera
-- Object transformations over time (the cube spins, doesn't it?)
+- Object transformations over time (theoretically; there used to be a spinning cube. Apparently I made this render sponza at some point?)
 - Shaders and models loaded from disk (notably, shaders are not precompiled)
 - Texture mapping
 - Extremely rudimentary point lighting
