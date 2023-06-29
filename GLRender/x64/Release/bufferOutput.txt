@@ -1,3 +1,0 @@
-mVao: 3
-mVbo: 5
-mEbo: 6

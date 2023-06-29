@@ -24,7 +24,11 @@
 #pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "lib/SDL2.lib")
 #pragma comment(lib, "lib/SDL2main.lib")
+#if _DEBUG
+#pragma comment(lib, "lib/SOILd.lib")
+#else
 #pragma comment(lib, "lib/SOIL.lib")
+#endif
 #pragma comment(lib, "lib/glew32s.lib")
 
 #include <iostream>
